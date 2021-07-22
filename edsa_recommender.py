@@ -111,16 +111,27 @@ def main():
 
         about = st.sidebar.checkbox("About")
         if about:
-            st.title("Problem Statement")
-            st.markdown(" ")
-    
+            
+            
+            st.subheader("**Problem Statement**")
+            st.markdown("Recommender systems became a useful feature due to the necessity to navigate in the sea of content.\
+                        There is a lot of stuff available online,\
+                        and many users have a hard time not only finding something they want but even figuring out what it is that they want in the first place.\
+                        So,the recommender system is a delicate way of bringing users and relevant content together.\
+                        In essence,anything can be recommended or suggested - shoes, clothes, places, films, applications,\
+                         browser plugins, memes, music, blog posts, communities, even people or their specific skills, and so on.\
+                         All the recommendation system does is narrowing the selection of specific content to the one that is the most relevant to the particular user.")
+            
+            st.subheader("**Overview**")
+            st.markdown("Using the content-based algorithm, the app takes in the user's three favourite movies\
+                        then gives the user a list of recommended movies that user can watch and discovered")
     if page_selection == "Team":
         st.title("Meet the team")
-    #Create checkbox to display team member names
     
                 
         st.subheader("**Unsupervised AE4**")
-        st.write("The team:")
+        
+        st.image("Images/group_member.png", use_column_width=True)
         st.markdown("* Jean-Luc Van Zyl- Team Coordinator")
         st.markdown("* Pearl Matsane")
         st.markdown("* Lydia Lehutjo")
@@ -135,34 +146,67 @@ def main():
         source = st.sidebar.checkbox("Data Source")
         if source:
             st.subheader("Where did we get the data from?")
-        
+            st.image('Images/download.jpg', use_column_width =False)
+            st.markdown("The data was obtained from the MovieLens \
+            which has the several millions 5-star ratings obtained from users using the online recommendation system.\
+            The IMBD (imbd_df) was legally scraped from IMDB.")
+
         look = st.sidebar.checkbox("Data")
         if look:
             st.subheader("What did the data consists?")
+            st.markdown("* Movies -Movie titles are entered manually or imported from https://www.themoviedb.org/, and include the year of release in parentheses")
+            st.markdown("* Genome_scores - is a score mapping the strength between movies and tag-related properties.")
+            st.markdown("* Genome_tags - User assigned for the movies within the dataset.")
+            st.markdown("* Imdb - Additional movie metadata scraped from IMDB using the links.csv file.")
+            st.markdown("* Links - File providing a mapping between a MovieLens ID and associated IMDB and TMDB IDs.")
+            st.markdown("* Train - The training split of the dataset. Contains user and movie IDs with associated rating data.")
+
+
         user = st.sidebar.checkbox("User analysis")
         if user:
             st.subheader("Insights from users")
+            st.image('Images/user_analysis.png', width = 720)
+            st.markdown("These graphs show the density plots of the average rating of users and the number of movies per user.\
+                        What is observed that most of the users rated the movies an avg of 3.5 and most users watched less than 500 movies")
         movies = st.sidebar.checkbox("Movie analysis")
         if movies:
             st.subheader("Insights from Movies")
-        conclusion = st.sidebar.checkbox("General Insights")
-        if conclusion:
-            st.subheader("General Insights from EDA")
+            st.image('Images/wordcloud.png', use_column_width=False)
+            st.markdown("These are most common genres in the dataset!")
+
         st.sidebar.subheader("Modelling")
         model = st.sidebar.checkbox("Content-based")
         if model:
             st.subheader("Content based Model")
+            st.markdown("**Algorithm:**")
+            st.markdown("The algorithm that was used was the unsupervised kNN learning best method.\
+                        It acts as a uniform interface to three different nearest neighbors algorithms:\
+                        BallTree, KDTree, and a brute-force algorithm based on routines in sklearn.metrics.pairwise.\
+                        More infomation can be received here:https://scikit-learn.org/stable/modules/neighbors.html#:~:text=1.-,Unsupervised%20Nearest%20Neighbors,based%20on%20routines%20in%20sklearn.")
     
     if page_selection == "Conclusion":
-        st.subheader("Overall conclusion")
-        st.subheader("What can this do for your Business?")
+        st.subheader("**Overall conclusion**")
+        st.markdown("In this where data is generated at a faster rated than we can use.\
+                        With a majority of modern services and products now being offered predominately online,\
+                        it can be hard to get to know your customers.\
+                        Unlike running a local store where you get to know each person that comes in,\
+                        online businesses can struggle to know exactly what their users are expecting.")
 
-        
+        st.subheader("**How can your business use this?**")
+        st.markdown("To advances in machine learning, and deep learning specifically,\
+                        it is now possible to get to know millions of customers completely online simply through their data.\
+                        By using a data model to filter through your users' favorite products and interests,\
+                        it is easier than ever to make recommendations to them for what they would enjoy to use or buy.")
+            
+        st.markdown("Content-based solutions are used by a range of different businesses.\
+                        They're probably the most commonly used method and one we have all encountered at some point.\
+                        Sites such as Amazon and the Google Play Store are just some of the many examples out there.")
+
+
         st.title("Enjoy your movies! ")
 
     # You may want to add more sections here for aspects such as an EDA,
-    # or to provide your business pitch.
-    
+    # or to provide your business pitch.    
 
 if __name__ == '__main__':
     main()
