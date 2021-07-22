@@ -31,13 +31,13 @@
 import os
 import pandas as pd
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.neighbors import  NearestNeighbors
+import random
 
 # Importing data
-movies = pd.read_csv('resources/data/movies.csv', sep = ',',delimiter=',')
+movies_df = pd.read_csv('resources/data/movies.csv',delimiter=',')
 ratings = pd.read_csv('resources/data/ratings.csv')
-movies.dropna(inplace=True)
+movies_df.dropna(inplace=True)
 
 def data_preprocessing(subset_size):
     """Prepare data for use within Content filtering algorithm.
@@ -53,10 +53,27 @@ def data_preprocessing(subset_size):
         Subset of movies selected for content-based filtering.
 
     """
-    # Split genre data into individual words.
-    movies['keyWords'] = movies['genres'].str.replace('|', ' ')
-    # Subset of the data
-    movies_subset = movies[:subset_size]
+    # Create a new dataframe to make genres into list format
+    movies = movies_df.copy()
+    # Split the genres feature so that each genres will be in a list format 
+    movies['genres'] = movies.genres.str.split('|')
+
+    #Copying the movie dataframe into a new one since we won't need to use the genre information in our first case.
+    moviesWithGenres_df = movies.copy()
+
+    #For every row in the dataframe, iterate through the list of genres and place a 1 into the corresponding column
+    for index, row in movies.iterrows():
+        for genre in row['genres']:
+            moviesWithGenres_df.at[index, genre] = 1
+    #Filling in the NaN values with 0 to show that a movie doesn't have that column's genre
+    moviesWithGenres_df = moviesWithGenres_df.fillna(0)
+
+    # Deleting the genres column 
+    moviesWithGenres_df.drop(['genres'],axis =1, inplace = True)
+
+    # Slice the data to the desired size
+    movies_subset = moviesWithGenres_df[:subset_size]
+
     return movies_subset
 
 # !! DO NOT CHANGE THIS FUNCTION SIGNATURE !!
@@ -80,33 +97,67 @@ def content_model(movie_list,top_n=10):
     """
     # Initializing the empty list of recommended movies
     recommended_movies = []
+    
+    # Preprocess the data 
     data = data_preprocessing(27000)
-    # Instantiating and generating the count matrix
-    count_vec = CountVectorizer()
-    count_matrix = count_vec.fit_transform(data['keyWords'])
-    indices = pd.Series(data['title'])
-    cosine_sim = cosine_similarity(count_matrix, count_matrix)
-    # Getting the index of the movie that matches the title
-    idx_1 = indices[indices == movie_list[0]].index[0]
-    idx_2 = indices[indices == movie_list[1]].index[0]
-    idx_3 = indices[indices == movie_list[2]].index[0]
-    # Creating a Series with the similarity scores in descending order
-    rank_1 = cosine_sim[idx_1]
-    rank_2 = cosine_sim[idx_2]
-    rank_3 = cosine_sim[idx_3]
-    # Calculating the scores
-    score_series_1 = pd.Series(rank_1).sort_values(ascending = False)
-    score_series_2 = pd.Series(rank_2).sort_values(ascending = False)
-    score_series_3 = pd.Series(rank_3).sort_values(ascending = False)
-    # Getting the indexes of the 10 most similar movies
-    listings = score_series_1.append(score_series_1).append(score_series_3).sort_values(ascending = False)
+    
+    # Create a new DataFrame
+    data1 = data.copy()
+    data2 = data.copy()
 
-    # Store movie names
-    recommended_movies = []
-    # Appending the names of movies
-    top_50_indexes = list(listings.iloc[1:50].index)
-    # Removing chosen movies
-    top_indexes = np.setdiff1d(top_50_indexes,[idx_1,idx_2,idx_3])
-    for i in top_indexes[:top_n]:
-        recommended_movies.append(list(movies['title'])[i])
+    # Change the index of the DataFrame
+    data2 = data2.set_index('title')
+
+    # Delete the columns the unneccesary columns 
+    data1.drop(['title'],axis = 1,inplace=True)
+    
+    # Generating the count matrix for each genres
+    data1 = data1.set_index('movieId')
+
+    # Instantiating the model and fitting the model to the count matrix
+    nn = NearestNeighbors(algorithm='brute',metric='cosine',n_neighbors=10)
+    nn.fit(data1)
+
+    # Create an Empty list for the movieids
+    movieids = []
+
+    # Getting the movieids
+    ind1 = data2.loc[movie_list[0],'movieId']
+    ind2 = data2.loc[movie_list[1],'movieId']
+    ind3 = data2.loc[movie_list[2],'movieId']
+
+    # Adding the movieids to the list
+    movieids.extend([ind1,ind2,ind3])
+    # Setting a list of indexes
+    index_list = []
+
+    # Getting the suggestions in form of indexes
+    for i in range(len(movieids)):
+        distances,suggestions=nn.kneighbors(data1.loc[movieids[i],:].values.reshape(1,-1),n_neighbors=15)
+
+        for j in range(15):
+            index_list.append(suggestions[0,j])
+
+    # Creating an empty list to store the movie ids 
+    movieids2 = []
+    
+    # Create a for loop get the titles of the movies
+    for i in range(len(index_list)):
+        id = data1.index.values[index_list[i]]
+        movieids2.append(id)
+
+    # Create a list to store all the titles
+    title_list = []
+
+    # Create a new dataframe to get the titles of the movies and change the index to movieId 
+    data3 = data.copy()
+    data3 = data3.set_index('movieId')
+
+    for i in range(len(movieids2)):
+        title = data3.loc[movieids2[i],'title']
+        if(title not in movie_list):
+            title_list.append(title)
+
+    # recommended movies 
+    recommended_movies.extend(random.sample(title_list,top_n))
     return recommended_movies

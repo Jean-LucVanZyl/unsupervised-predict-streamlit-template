@@ -38,7 +38,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 
 # Importing data
-movies_df = pd.read_csv('resources/data/movies.csv',sep = ',',delimiter=',')
+movies_df = pd.read_csv('resources/data/movies.csv',delimiter=',')
 ratings_df = pd.read_csv('resources/data/ratings.csv')
 ratings_df.drop(['timestamp'], axis=1,inplace=True)
 
@@ -117,6 +117,8 @@ def collab_model(movie_list,top_n=10):
         Titles of the top-n movie recommendations to the user.
 
     """
+
+    
 
     indices = pd.Series(movies_df['title'])
     movie_ids = pred_movies(movie_list)
